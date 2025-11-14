@@ -13,19 +13,20 @@
       <li
         v-for="paciente in pacientesFiltrados"
         :key="paciente.PacienteId"
-        class="border rounded-lg p-4 shadow-sm hover:shadow-md transition"
+        class="border rounded-lg p-3 shadow-sm cursor-pointer transition-all duration-200 hover:bg-blue-200 hover:shadow-md flex items-center gap-6"
+        @click="irADetalle(paciente.PacienteId)"
       >
-        <p>
-          <strong>Nombre:</strong>
-          <router-link
-            :to="{ name: 'PatientDetail', params: { id: paciente.PacienteId } }"
-            class="text-blue-600 hover:underline"
-          >
-            {{ paciente.Nombres }} {{ paciente.Apellidos }}
-          </router-link>
-        </p>
-        <p><strong>Diagnóstico:</strong> {{ paciente.Diagnóstico || 'N/A' }}</p>
-        <p><strong>Fecha de consulta:</strong> {{ paciente.Fecha || 'N/A' }}</p>
+        <!-- Icono de usuario -->
+        <span class="text-xl">👤</span>
+
+        <!-- Nombre -->
+        <span class="flex-1 min-w-[180px] font-medium px-2">{{ paciente.Nombres }} {{ paciente.Apellidos }}</span>
+
+        <!-- Diagnóstico -->
+        <span class="flex-1 min-w-[180px] px-2">{{ paciente.Diagnóstico || 'N/A' }}</span>
+
+        <!-- Fecha -->
+        <span class="flex-1 min-w-[140px] text-right px-2">{{ paciente.Fecha || 'N/A' }}</span>
       </li>
     </ul>
 
@@ -37,10 +38,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const pacientes = ref([])
 const busqueda = ref('')
+const router = useRouter()
 
 onMounted(async () => {
   try {
@@ -51,7 +54,6 @@ onMounted(async () => {
   }
 })
 
-// Filtrado por cualquier campo
 const pacientesFiltrados = computed(() => {
   const texto = busqueda.value.toLowerCase().trim()
   if (!texto) return pacientes.value
@@ -61,4 +63,8 @@ const pacientesFiltrados = computed(() => {
     )
   )
 })
+
+const irADetalle = (id) => {
+  router.push({ name: 'PatientDetail', params: { id } })
+}
 </script>

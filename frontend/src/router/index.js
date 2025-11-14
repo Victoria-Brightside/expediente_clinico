@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // Importamos las vistas con rutas exactas
 import UploadView from '../views/UploadView.vue'
-import EditView from '../views/EditView.vue'
+import Login from '../views/Login.vue'
 import HomeView from '../views/HomeView.vue'
 import PatientsView from '../views/PatientsView.vue'
 import PatientDetailView from '../views/PatientDetailView.vue' // 👈 Nueva vista
@@ -24,7 +24,7 @@ const routes = [
   component: () => import('../views/NoteDetailView.vue'),
   props: true
 },
-  { path: '/edit', component: EditView },
+  { path: '/login', component: Login },
 ]
 
 const router = createRouter({

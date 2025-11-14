@@ -1,16 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
+const router = useRouter()
 const notas = ref([])
 const paciente = ref({})
 const pacienteId = route.params.id
 
 onMounted(async () => {
   try {
-    // Usamos el PacienteId exacto desde el router
     const res = await axios.get(`http://127.0.0.1:8000/pacientes/${encodeURIComponent(pacienteId)}/notas`)
     notas.value = res.data
 
@@ -24,6 +24,10 @@ onMounted(async () => {
     console.error('Error al cargar notas del paciente:', error)
   }
 })
+
+const verNota = (notaId) => {
+  router.push({ name: 'NoteDetail', params: { id: pacienteId, noteId: notaId } })
+}
 </script>
 
 <template>
@@ -34,14 +38,16 @@ onMounted(async () => {
       Notas de {{ paciente.Nombres }} {{ paciente.Apellidos }}
     </h1>
 
-    <ul v-if="notas.length" class="space-y-3">
-      <li 
-        v-for="nota in notas" 
-        :key="nota._id" 
-        class="border rounded-lg p-4 shadow-sm"
+    <ul v-if="notas.length" class="space-y-2">
+      <li
+        v-for="nota in notas"
+        :key="nota._id"
+        class="border rounded-lg p-3 shadow-sm cursor-pointer transition-all duration-200 hover:bg-blue-200 hover:shadow-lg flex items-center space-x-2"
+        @click="verNota(nota._id)"
       >
-        <p><strong>Fecha:</strong> {{ nota.Fecha }}</p>
-        <p><strong>Diagnóstico:</strong> {{ nota.Diagnóstico }}</p>
+        <span>📅 {{ nota.Fecha }}</span>
+        <span>—</span>
+        <span>{{ nota.Diagnóstico }}</span>
       </li>
     </ul>
 

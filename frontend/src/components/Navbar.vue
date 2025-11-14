@@ -4,8 +4,7 @@
       <li><router-link to="/">Inicio</router-link></li>
       <li><router-link to="/upload">Subir documento</router-link></li>
       <li><router-link to="/patients">Mis pacientes</router-link></li>
-
-      <li><router-link to="/edit/1">Editar documento</router-link></li>
+      <li><router-link to="/login">Iniciar sesión</router-link></li>
     </ul>
   </nav>
 </template>
