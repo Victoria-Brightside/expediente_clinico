@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,23 +35,55 @@ const toggleEdicion = () => {
 // Guardar cambios
 const guardarNota = async () => {
   try {
+    const datos = { ...nota.value }
+    delete datos._id  // Esto es importante
+
     await axios.put(
       `http://127.0.0.1:8000/pacientes/${encodeURIComponent(pacienteId)}/notas/${noteId}`,
-      nota.value
+      datos
     )
-    alert('Nota actualizada correctamente')
+
+    Swal.fire({
+      title: 'Nota actualizada',
+      text: 'Los cambios se guardaron correctamente.',
+      icon: 'success',
+      background: '#1f2937',
+      color: '#f9fafb',
+      iconColor: '#10b981',
+      confirmButtonColor: '#3b82f6',
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'rounded-xl shadow-xl',
+        confirmButton: 'px-4 py-2 rounded-lg font-semibold hover:bg-blue-600'
+      }
+    })
+
     modoEdicion.value = false
+
   } catch (error) {
-    console.error('Error al guardar la nota:', error)
-    alert('No se pudo guardar la nota')
+    Swal.fire({
+      title: 'Error al guardar',
+      text: 'Hubo un problema actualizando la nota.',
+      icon: 'error',
+      background: '#1f2937',
+      color: '#f9fafb',
+      iconColor: '#ef4444',
+      confirmButtonColor: '#3b82f6',
+      customClass: {
+        popup: 'rounded-xl shadow-xl',
+        confirmButton: 'px-4 py-2 rounded-lg font-semibold hover:bg-blue-600'
+      }
+    })
   }
 }
 </script>
 
 <template>
   <div class="p-6 max-w-4xl mx-auto">
-    <router-link :to="{ name: 'PatientDetail', params: { id: pacienteId } }"
-                 class="text-blue-600 hover:underline">
+    <router-link
+      :to="{ name: 'PatientDetail', params: { id: pacienteId } }"
+      class="text-blue-600 hover:underline"
+    >
       ← Volver a notas
     </router-link>
 
@@ -58,98 +92,169 @@ const guardarNota = async () => {
     </h1>
 
     <div class="mb-4">
-      <button @click="modoEdicion ? guardarNota() : toggleEdicion()"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        {{ modoEdicion ? 'Guardar cambios' : 'Editar nota' }}
-      </button>
+ <button
+  @click="modoEdicion ? guardarNota() : toggleEdicion()"
+  class="px-5 py-2 rounded-xl font-semibold
+         bg-[#124E66] hover:bg-[#1C6E88]
+         text-white shadow-md transition-all"
+>
+  {{ modoEdicion ? 'Guardar cambios' : 'Editar nota' }}
+</button>
+
     </div>
 
-    <form v-if="nota._id" class="nota-form">
-      <label>Fecha:</label>
-      <input type="date" v-model="nota.Fecha" :disabled="!modoEdicion" />
+    <form
+  v-if="nota._id"
+  class="grid grid-cols-[200px_1fr] gap-x-6 gap-y-4 max-w-3xl mx-auto"
+>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Fecha:</label>
+  <input
+    type="date"
+    v-model="nota.Fecha"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           transition-all duration-200 shadow-sm"
+  />
 
-      <label>Hora:</label>
-      <input type="time" v-model="nota.Hora" :disabled="!modoEdicion" />
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Hora:</label>
+  <input
+    type="time"
+    v-model="nota.Hora"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           transition-all duration-200 shadow-sm"
+  />
 
-      <label>Diagnóstico:</label>
-      <input type="text" v-model="nota.Diagnóstico" :disabled="!modoEdicion" />
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Diagnóstico:</label>
+  <input
+    type="text"
+    v-model="nota.Diagnóstico"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600"
+  />
 
-      <label>Padecimiento actual:</label>
-      <textarea v-model="nota['Padecimiento actual']" :disabled="!modoEdicion"></textarea>
+  <!-- Textareas -->
 
-      <label>Antecedentes personales patológicos:</label>
-      <textarea v-model="nota['Antecedentes personales patológicos']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Padecimiento actual:</label>
+  <textarea
+    v-model="nota['Padecimiento actual']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Antecedentes personales no patológicos:</label>
-      <textarea v-model="nota['Antecedentes personales no patológicos']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Antecedentes personales patológicos:</label>
+  <textarea
+    v-model="nota['Antecedentes personales patológicos']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Antecedentes heredofamiliares:</label>
-      <textarea v-model="nota['Antecedentes heredofamiliares']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Antecedentes personales no patológicos:</label>
+  <textarea
+    v-model="nota['Antecedentes personales no patológicos']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Exploración física:</label>
-      <textarea v-model="nota['Exploración física']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Antecedentes heredofamiliares:</label>
+  <textarea
+    v-model="nota['Antecedentes heredofamiliares']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Resultados de laboratorio:</label>
-      <textarea v-model="nota['Resultados de laboratorio']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Exploración física:</label>
+  <textarea
+    v-model="nota['Exploración física']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Estudios de imagenología:</label>
-      <textarea v-model="nota['Estudios de imagenología']" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Resultados de laboratorio:</label>
+  <textarea
+    v-model="nota['Resultados de laboratorio']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Pronóstico:</label>
-      <input type="text" v-model="nota.Pronóstico" :disabled="!modoEdicion" />
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Estudios de imagenología:</label>
+  <textarea
+    v-model="nota['Estudios de imagenología']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Tratamiento:</label>
-      <textarea v-model="nota.Tratamiento" :disabled="!modoEdicion"></textarea>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Pronóstico:</label>
+  <input
+    type="text"
+    v-model="nota.Pronóstico"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600"
+  />
 
-      <label>Médico tratante:</label>
-      <input type="text" v-model="nota['Médico tratante']" :disabled="!modoEdicion" />
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Tratamiento:</label>
+  <textarea
+    v-model="nota.Tratamiento"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600
+           min-h-[3rem] resize-y"
+  ></textarea>
 
-      <label>Especialidad:</label>
-      <input type="text" v-model="nota.Especialidad" :disabled="!modoEdicion" />
-    </form>
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Médico tratante:</label>
+  <input
+    type="text"
+    v-model="nota['Médico tratante']"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600"
+  />
+
+  <label class="font-semibold text-right pr-2 text-[#124E66] pt-2">Especialidad:</label>
+  <input
+    type="text"
+    v-model="nota.Especialidad"
+    :disabled="!modoEdicion"
+    class="w-full px-3 py-2 rounded-lg bg-[#1b2f3a] text-gray-100 border
+           border-teal-700 focus:outline-none focus:border-teal-500
+           disabled:bg-gray-800 disabled:text-gray-400 disabled:border-gray-600"
+  />
+</form>
+
 
     <p v-else class="text-gray-500">No se encontró la nota.</p>
   </div>
 </template>
 
-<style scoped>
-/* Formulario de edición de nota */
-.nota-form {
-  display: grid;
-  grid-template-columns: 200px 1fr; /* Label fijo, input flexible */
-  gap: 1rem 2rem;
-  align-items: start;
-  max-width: 800px;
-  margin: 0 auto;
-}
 
-.nota-form label {
-  font-weight: 600;
-  text-align: right;
-  padding-top: 0.5rem;
-}
-
-.nota-form input,
-.nota-form textarea {
-  border: 1px solid #646cff;
-  border-radius: 6px;
-  padding: 0.5rem;
-  width: 100%;
-  background-color: #1a1a1a;
-  color: #fff;
-  font-family: inherit;
-}
-
-.nota-form textarea {
-  resize: vertical;
-  min-height: 3rem;
-}
-
-/* Campos deshabilitados */
-.nota-form input:disabled,
-.nota-form textarea:disabled {
-  background-color: #2a2a2a;
-  color: #aaa;
-  border-color: #444;
-}
-</style>
