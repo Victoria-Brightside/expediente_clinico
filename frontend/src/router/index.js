@@ -18,6 +18,12 @@ const routes = [
     component: PatientDetailView, 
     props: true 
   },
+  {
+  path: '/patients/:id/note/:noteId',
+  name: 'NoteDetail',
+  component: () => import('../views/NoteDetailView.vue'),
+  props: true
+},
   { path: '/edit', component: EditView },
 ]
 

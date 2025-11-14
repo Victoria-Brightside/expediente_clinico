@@ -1,54 +1,45 @@
-<template>
-  <div class="p-6 max-w-3xl mx-auto">
-    <router-link :to="`/pacients/${id}`" class="text-blue-600 hover:underline">← Volver</router-link>
-
-    <h1 class="text-2xl font-bold mb-4">🩺 {{ nota.titulo }}</h1>
-    <p class="text-gray-600 mb-2">Fecha: {{ formatFecha(nota.fecha) }}</p>
-
-    <textarea
-      v-model="nota.contenido"
-      rows="12"
-      class="w-full border rounded p-2 mb-4"
-    ></textarea>
-
-    <div class="flex gap-3">
-      <button @click="guardarNota" class="bg-blue-600 text-white px-4 py-2 rounded">💾 Guardar</button>
-      <button @click="imprimirNota" class="bg-gray-600 text-white px-4 py-2 rounded">🖨️ Vista previa</button>
-    </div>
-
-    <p v-if="mensaje" class="text-green-600 mt-3">{{ mensaje }}</p>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
-const id = route.params.id
+const router = useRouter()
+const nota = ref(null)
+const pacienteId = route.params.id
 const noteId = route.params.noteId
 
-const nota = ref({})
-const mensaje = ref('')
-const API_URL = 'http://localhost:8000'
-
+// Traer nota completa
 onMounted(async () => {
-  const res = await axios.get(`${API_URL}/patients/${id}/notes/${noteId}`)
-  nota.value = res.data
+  try {
+    const res = await axios.get(`http://127.0.0.1:8000/notas/${noteId}`)
+    nota.value = res.data
+  } catch (error) {
+    console.error('Error al cargar la nota:', error)
+  }
 })
-
-const guardarNota = async () => {
-  await axios.put(`${API_URL}/patients/${id}/notes/${noteId}`, nota.value)
-  mensaje.value = '✅ Nota guardada correctamente.'
-  setTimeout(() => mensaje.value = '', 2000)
-}
-
-const imprimirNota = () => {
-  const ventana = window.open('', '_blank')
-  ventana.document.write(`<pre>${nota.value.contenido}</pre>`)
-  ventana.print()
-}
-
-const formatFecha = f => new Date(f).toLocaleDateString()
 </script>
+
+<template>
+  <div class="p-6 max-w-4xl mx-auto">
+    <router-link :to="{ name: 'PatientDetail', params: { id: pacienteId } }" 
+                 class="text-blue-600 hover:underline">← Volver</router-link>
+
+    <h1 class="text-2xl font-bold mb-4">
+      Nota de {{ nota?.Nombres }} {{ nota?.Apellidos }}
+    </h1>
+
+    <div v-if="nota">
+      <p><strong>Fecha:</strong> {{ nota.Fecha }} {{ nota.Hora }}</p>
+      <p><strong>Diagnóstico:</strong> {{ nota.Diagnóstico }}</p>
+      <p><strong>Padecimiento actual:</strong> {{ nota['Padecimiento actual'] }}</p>
+      <p><strong>Antecedentes personales patológicos:</strong> {{ nota['Antecedentes personales patológicos'] }}</p>
+      <p><strong>Tratamiento:</strong> {{ nota.Tratamiento }}</p>
+      <p><strong>Médico tratante:</strong> {{ nota['Médico tratante'] }}</p>
+      <p><strong>Especialidad:</strong> {{ nota.Especialidad }}</p>
+      <!-- Agrega aquí los campos que quieras mostrar completos -->
+    </div>
+
+    <p v-else class="text-gray-500">Cargando nota...</p>
+  </div>
+</template>

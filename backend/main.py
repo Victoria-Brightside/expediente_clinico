@@ -1,30 +1,28 @@
-# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import notas_collection  # tu conexión a MongoDB
+from database import notas_collection
+from urllib.parse import unquote
 
-app = FastAPI(title="Backend Expediente Médico")
+app = FastAPI()
 
-# ---- Configuración de CORS ----
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # permite cualquier origen (puedes restringirlo a tu frontend)
+    allow_origins=["*"],  # o tu frontend http://localhost:5173
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---- Endpoints ----
-
-# Obtener todos los pacientes únicos
+# Endpoint para listar pacientes únicos
 @app.get("/pacientes")
 def listar_pacientes():
     pacientes_dict = {}
     for nota in notas_collection.find():
-        key = (nota.get("Nombres"), nota.get("Apellidos"))
-        if key not in pacientes_dict:
-            pacientes_dict[key] = {
-                "id": str(nota["_id"]),  # id único para cada paciente (tomamos el de la primera nota)
+        paciente_id = nota.get("PacienteId")  # usa el campo real de MongoDB
+        if paciente_id not in pacientes_dict:
+            pacientes_dict[paciente_id] = {
+                "PacienteId": paciente_id,
                 "Nombres": nota.get("Nombres"),
                 "Apellidos": nota.get("Apellidos"),
                 "Diagnóstico": nota.get("Diagnóstico"),
@@ -32,30 +30,13 @@ def listar_pacientes():
             }
     return list(pacientes_dict.values())
 
-# Obtener todas las notas médicas
-@app.get("/notas_medicas")
-def listar_notas():
-    notas = []
-    for nota in notas_collection.find():
-        notas.append({
-            "_id": {"$oid": str(nota["_id"])},
-            "Fecha": nota.get("Fecha"),
-            "Hora": nota.get("Hora"),
-            "Nombres": nota.get("Nombres"),
-            "Apellidos": nota.get("Apellidos"),
-            "Diagnóstico": nota.get("Diagnóstico"),
-            "Edad": nota.get("Edad"),
-            "Sexo": nota.get("Sexo"),
-            "Padecimiento actual": nota.get("Padecimiento actual"),
-            "Antecedentes personales patológicos": nota.get("Antecedentes personales patológicos"),
-            "Antecedentes personales no patológicos": nota.get("Antecedentes personales no patológicos"),
-            "Antecedentes heredofamiliares": nota.get("Antecedentes heredofamiliares"),
-            "Exploración física": nota.get("Exploración física"),
-            "Resultados de laboratorio": nota.get("Resultados de laboratorio"),
-            "Estudios de imagenología": nota.get("Estudios de imagenología"),
-            "Pronóstico": nota.get("Pronóstico"),
-            "Tratamiento": nota.get("Tratamiento"),
-            "Médico tratante": nota.get("Médico tratante"),
-            "Especialidad": nota.get("Especialidad"),
-        })
+
+# Endpoint para traer todas las notas de un paciente
+@app.get("/pacientes/{paciente_id}/notas")
+def listar_notas_paciente(paciente_id: str):
+    paciente_id = unquote(paciente_id)  # decodifica caracteres URL (%C3%A9 → é)
+    notas = list(notas_collection.find({"PacienteId": paciente_id}))
+    for nota in notas:
+        nota["_id"] = str(nota["_id"])
     return notas
+
